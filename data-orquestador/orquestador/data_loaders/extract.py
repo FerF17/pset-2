@@ -21,7 +21,7 @@ def load_data(*args, **kwargs):
     urls = []
     
 
-    for year in range(2025, 2023, -1):
+    for year in range(2025, 2022, -1):
 
         for month in range(12, 0, -1):
             

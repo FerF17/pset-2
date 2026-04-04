@@ -10,7 +10,6 @@ import gc
 if 'data_exporter' not in globals():
     from mage_ai.data_preparation.decorators import data_exporter
 
-
 @data_exporter
 def export_data_to_postgres(urls, **kwargs) -> None:
     schema_name = 'raw' 
@@ -20,12 +19,12 @@ def export_data_to_postgres(urls, **kwargs) -> None:
 
     tamano_chunk = 100000 
     
+    # Variable de control
     primera_insercion = True
 
     for url in urls:
         print(f"Procesando archivo: {url}")
         try:
-            
             df_temp = pd.read_parquet(url)
             df_temp.columns = df_temp.columns.str.lower()
             
@@ -40,7 +39,7 @@ def export_data_to_postgres(urls, **kwargs) -> None:
                     
                     df_chunk = df_temp.iloc[inicio:fin].copy()
                     
-                    
+                    # Transformación temporal pesada (considerar optimizar en el futuro)
                     df_chunk = df_chunk.astype(str)
                     
                     politica_insercion = 'replace' if primera_insercion else 'append'
@@ -57,14 +56,14 @@ def export_data_to_postgres(urls, **kwargs) -> None:
                     
                     inicio = fin
                     fin += tamano_chunk
-                    es_primera_insercion = False 
                     
+                    # CORRECCIÓN: Actualizamos la variable correcta
+                    primera_insercion = False 
                     
                     del df_chunk
                     gc.collect()
 
             print(f"Éxito cargando mes completo: {url}\n")
-            
             
             del df_temp
             gc.collect() 
@@ -75,4 +74,3 @@ def export_data_to_postgres(urls, **kwargs) -> None:
             print(f"   Traceback completo:")
             traceback.print_exc()
             print("─" * 60)
-     
