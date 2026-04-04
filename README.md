@@ -30,11 +30,19 @@ El sistema sigue un patrón **ELT (Extract, Load, Transform)** estructurado en d
 * **Modelado:** Aplicación de lógica de limpieza (manejo de nulos, outliers en costos y coordenadas).
 * **Esquema:** Generación de un **Star Schema** en el esquema `clean`:
     * **Fact Table:** `fact_trips` (Métricas granulares de viajes).
-    * **Dimensions:** `dim_datetime`, `dim_location`, `dim_rate_code`, `dim_payment_type`.
+    * **Dimensions:** `dim_pickup_location`, `dim_locationdim_dropoff_location`, `dim_vendor`, `dim_payment_type`.
 
 ---
 
-## 3. Stack Tecnológico
+## 3. Orquestación y Automatización (Triggers)
+
+Para garantizar la consistencia atómica del flujo de datos y cumplir con el paradigma "Event-Driven", ambas tuberías operan de forma automatizada evitando carreras lógicas (*race conditions*):
+
+* **Ingestión Periódica (`capa_raw`):** Se configuró un `Schedule Trigger` con frecuencia mensual (`@monthly`) que actúa como el punto de entrada (Entrypoint) simulando la ingesta periódica de los nuevos lotes de datos que publica la TLC.
+* **Dependencia Lógica (`capa_clean_v1`):** La capa de transformación *jamás* se ejecuta basándose en un horario arbitrario. Se implementó un trigger programático vía API (`trigger_pipeline` de Mage) en un bloque de Python al final de la capa Raw. Este bloque evalúa el estado del proceso *Upstream* y, si y solo si los datos fueron cargados exitosamente en PostgreSQL, emite una señal que arranca el pipeline de limpieza.
+---
+
+## 4. Stack Tecnológico
 
 | Componente | Tecnología | Rol |
 | :--- | :--- | :--- |
@@ -45,7 +53,7 @@ El sistema sigue un patrón **ELT (Extract, Load, Transform)** estructurado en d
 
 ---
 
-## 4. Estructura del Modelo Dimensional
+## 5. Estructura del Modelo Dimensional
 
 A diferencia de una tabla plana, este proyecto implementa un diseño orientado a **OLAP (Online Analytical Processing)**:
 
@@ -56,7 +64,7 @@ A diferencia de una tabla plana, este proyecto implementa un diseño orientado a
 
 ---
 
-## 5. Configuración y Ejecución
+## 6. Configuración y Ejecución
 
 ### Requisitos Previos
 * Docker y Docker Compose instalados.
@@ -79,13 +87,13 @@ A diferencia de una tabla plana, este proyecto implementa un diseño orientado a
     * **Mage UI:** `http://localhost:6789`
     * **PostgreSQL:** `localhost:5432` (User: `email`, Pass: `password`, DB: `ny_taxi`)
 
-4.  **Ejecución de Pipelines:**
-    * Dentro de Mage, ejecutar el trigger del pipeline `nyc_taxi_ingestion`.
-    * Una vez finalizado, ejecutar `nyc_taxi_transform`.
+4. **Ejecución de Pipelines:**
+    * **Inicio del Flujo:** Dentro de Mage, ejecutar el pipeline **`capa_raw`** (manualmente o vía trigger programado).
+    * **Automatización:** **No es necesario ejecutar manualmente `capa_clean_v1`.** El sistema detectará la finalización exitosa de la carga cruda y disparará automáticamente la fase de transformación analítica. 
 
 ---
 
-## 6. Consideraciones de Ciencia de Datos
+## 7. Consideraciones de Ciencia de Datos
 
 ### Supuestos y Limpieza:
 * **Manejo de Outliers:** Se filtran viajes con distancia cero o negativa y aquellos con montos totales inconsistentes ($Total Amount < 0$).
@@ -97,7 +105,7 @@ A diferencia de una tabla plana, este proyecto implementa un diseño orientado a
 
 ---
 
-## 7. Enfoque Académico vs. Aplicado
+## 8. Enfoque Académico vs. Aplicado
 
 * **Académico (Tesis/Lab):** Este proyecto demuestra la capacidad de normalizar datos y estructurar un flujo de trabajo reproducible siguiendo principios de ingeniería de software. Se enfoca en la **correctitud del modelo relacional**.
 * **Aplicado (Industria):** En un entorno de producto, este pipeline incluiría validaciones de calidad de datos automáticas (Great Expectations), CI/CD para los DAGs y monitoreo de costos de cómputo.
