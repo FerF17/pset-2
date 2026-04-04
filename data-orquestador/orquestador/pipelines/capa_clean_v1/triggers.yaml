@@ -1,8 +1,0 @@
-triggers:
-- name: trigger_dependiente_de_raw
-  schedule_type: pipeline_run
-  status: active
-  settings:
-    upstream_pipeline:
-      uuid: capa_raw
-      status: completed

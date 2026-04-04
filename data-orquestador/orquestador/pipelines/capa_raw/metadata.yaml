@@ -18,7 +18,8 @@ blocks:
 - all_upstream_blocks_executed: false
   color: null
   configuration: {}
-  downstream_blocks: []
+  downstream_blocks:
+  - trigger_clean
   executor_config: null
   executor_type: local_python
   has_callback: false
@@ -31,6 +32,22 @@ blocks:
   upstream_blocks:
   - extract
   uuid: esquema_raw
+- all_upstream_blocks_executed: false
+  color: null
+  configuration: {}
+  downstream_blocks: []
+  executor_config: null
+  executor_type: local_python
+  has_callback: false
+  language: python
+  name: trigger_clean
+  retry_config: null
+  status: updated
+  timeout: null
+  type: data_exporter
+  upstream_blocks:
+  - esquema_raw
+  uuid: trigger_clean
 cache_block_output_in_memory: false
 callbacks: []
 concurrency_config: {}

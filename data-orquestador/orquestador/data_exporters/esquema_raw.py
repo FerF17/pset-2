@@ -75,15 +75,4 @@ def export_data_to_postgres(urls, **kwargs) -> None:
             print(f"   Traceback completo:")
             traceback.print_exc()
             print("─" * 60)
-
-from mage_ai.orchestration.triggers.api import trigger_pipeline
-
-@data_exporter
-def trigger_clean_process(df, *args, **kwargs):
-    # Esto dispara el pipeline de limpieza si el de raw termina con éxito
-    trigger_pipeline(
-        'capa_clean_v1', 
-        variables={},
-        check_status=False,
-    )
-    return df # Retornamos el dataframe solo por consistencia        
+     
