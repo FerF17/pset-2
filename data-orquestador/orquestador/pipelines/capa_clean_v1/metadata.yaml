@@ -32,16 +32,24 @@ executor_config: {}
 executor_count: 1
 executor_type: null
 extensions: {}
-name: capa_raw_v1
+name: capa_clean_v1
 notification_config: {}
 remote_variables_dir: null
 retry_config: {}
 run_pipeline_in_one_process: false
 settings:
-  triggers: null
+  triggers:
+  - name: trigger_dependiente_de_raw
+    pipeline_uuid: capa_clean_v1
+    schedule_type: pipeline_run
+    status: active
+    settings:
+      upstream_pipeline:
+        uuid: capa_raw
+        status: completed
 spark_config: {}
 tags: []
 type: python
-uuid: capa_raw_v1
+uuid: capa_clean_v1
 variables_dir: /home/src/mage_data/orquestador
 widgets: []
